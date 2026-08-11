@@ -8,6 +8,7 @@ export interface User {
   full_name: string;
   bio: string;
   profile_picture_url: string;
+  is_private: boolean;
 }
 
 interface AuthContextType {

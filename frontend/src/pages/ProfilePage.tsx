@@ -5,7 +5,7 @@ import { userAPI, postAPI, interactionAPI } from '@/services/api';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { PostLightboxModal } from '@/components/PostLightboxModal';
-import { Settings, Grid3X3, Bookmark, Loader2, Heart, MessageCircle } from 'lucide-react';
+import { Settings, Grid3X3, Bookmark, Loader2, Heart, MessageCircle, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface ProfileData {
@@ -19,6 +19,8 @@ interface ProfileData {
   follower_count: number;
   following_count: number;
   is_following: boolean;
+  is_private: boolean;
+  can_view_posts: boolean;
 }
 
 export default function ProfilePage() {
@@ -95,7 +97,12 @@ export default function ProfilePage() {
         {/* Profile Info */}
         <div className="flex-1 space-y-4 text-center sm:text-left">
           <div className="flex flex-col sm:flex-row items-center gap-4">
-            <h1 className="text-xl font-normal text-white">{profile.username}</h1>
+            <h1 className="text-xl font-normal text-white flex items-center gap-2">
+              {profile.username}
+              {profile.is_private && !isOwnProfile && (
+                <Lock size={14} className="text-zinc-500" />
+              )}
+            </h1>
             {isOwnProfile ? (
               <div className="flex items-center gap-2">
                 <Link to="/settings">
@@ -171,10 +178,21 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Media Grid */}
+      {/* Media Grid / Private wall */}
       {activeTab === 'posts' && (
         <div>
-          {posts.length === 0 ? (
+          {!profile.can_view_posts && !isOwnProfile ? (
+            /* Private account wall */
+            <div className="text-center py-20 border-t border-[#262626]">
+              <div className="w-16 h-16 mx-auto mb-5 rounded-full border-2 border-zinc-700 flex items-center justify-center">
+                <Lock size={28} className="text-zinc-500" />
+              </div>
+              <h3 className="text-base font-semibold text-white mb-1">This Account is Private</h3>
+              <p className="text-xs text-zinc-500 max-w-xs mx-auto">
+                Follow this account to see their photos and videos.
+              </p>
+            </div>
+          ) : posts.length === 0 ? (
             <div className="text-center py-20">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full border border-zinc-700 flex items-center justify-center text-2xl">
                 📷

@@ -35,9 +35,10 @@ func NewUserService(userRepo *repositories.UserRepository, followRepo *repositor
 
 // UpdateProfileInput represents the input for updating user profile.
 type UpdateProfileInput struct {
-	FullName string `json:"full_name"`
-	Bio      string `json:"bio"`
-	Username string `json:"username"`
+	FullName  string `json:"full_name"`
+	Bio       string `json:"bio"`
+	Username  string `json:"username"`
+	IsPrivate *bool  `json:"is_private"`
 }
 
 // ProfileResponse represents a detailed user profile response.
@@ -47,6 +48,8 @@ type ProfileResponse struct {
 	FollowerCount  int64 `json:"follower_count"`
 	FollowingCount int64 `json:"following_count"`
 	IsFollowing    bool  `json:"is_following"`
+	IsPrivate      bool  `json:"is_private"`
+	CanViewPosts   bool  `json:"can_view_posts"`
 }
 
 // GetProfile retrieves a user's profile with counts.
@@ -65,12 +68,17 @@ func (s *UserService) GetProfile(userID uint, currentUserID uint) (*ProfileRespo
 		isFollowing, _ = s.followRepo.IsFollowing(currentUserID, userID)
 	}
 
+	// Can view posts: public account OR own profile OR following
+	canViewPosts := !user.IsPrivate || currentUserID == userID || isFollowing
+
 	return &ProfileResponse{
 		UserResponse:   toUserResponse(user),
 		PostCount:      postCount,
 		FollowerCount:  followerCount,
 		FollowingCount: followingCount,
 		IsFollowing:    isFollowing,
+		IsPrivate:      user.IsPrivate,
+		CanViewPosts:   canViewPosts,
 	}, nil
 }
 
@@ -93,6 +101,9 @@ func (s *UserService) UpdateProfile(userID uint, input UpdateProfileInput) (*Use
 			return nil, errors.New("username already taken")
 		}
 		user.Username = input.Username
+	}
+	if input.IsPrivate != nil {
+		user.IsPrivate = *input.IsPrivate
 	}
 
 	if err := s.userRepo.Update(user); err != nil {

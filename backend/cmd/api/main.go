@@ -46,7 +46,7 @@ func main() {
 	// Initialize services
 	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
 	userService := services.NewUserService(userRepo, followRepo, cfg.UploadDir)
-	postService := services.NewPostService(postRepo, likeRepo, commentRepo, cfg.UploadDir)
+	postService := services.NewPostService(postRepo, likeRepo, commentRepo, userRepo, followRepo, cfg.UploadDir)
 	interactionService := services.NewInteractionService(likeRepo, commentRepo, followRepo, userRepo)
 	storyService := services.NewStoryService(storyRepo, cfg.UploadDir)
 

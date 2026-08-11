@@ -4,7 +4,7 @@ import { postAPI, userAPI } from '@/services/api';
 import { Input } from '@/components/Input';
 import { Avatar } from '@/components/Avatar';
 import { PostLightboxModal } from '@/components/PostLightboxModal';
-import { Search, Loader2, Heart, MessageCircle } from 'lucide-react';
+import { Search, Loader2, Heart, MessageCircle, Lock } from 'lucide-react';
 
 export default function ExplorePage() {
   const [posts, setPosts] = useState<any[]>([]);
@@ -87,7 +87,10 @@ export default function ExplorePage() {
               >
                 <Avatar src={user.profile_picture_url} alt={user.username} size="md" />
                 <div>
-                  <p className="text-xs font-semibold text-white">{user.username}</p>
+                  <p className="text-xs font-semibold text-white flex items-center gap-1.5">
+                    {user.username}
+                    {user.is_private && <Lock size={11} className="text-zinc-500" />}
+                  </p>
                   <p className="text-xs text-zinc-500">{user.full_name}</p>
                 </div>
               </Link>

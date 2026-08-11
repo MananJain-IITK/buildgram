@@ -19,6 +19,8 @@ type PostService struct {
 	postRepo    *repositories.PostRepository
 	likeRepo    *repositories.LikeRepository
 	commentRepo *repositories.CommentRepository
+	userRepo    *repositories.UserRepository
+	followRepo  *repositories.FollowRepository
 	uploadDir   string
 }
 
@@ -27,12 +29,16 @@ func NewPostService(
 	postRepo *repositories.PostRepository,
 	likeRepo *repositories.LikeRepository,
 	commentRepo *repositories.CommentRepository,
+	userRepo *repositories.UserRepository,
+	followRepo *repositories.FollowRepository,
 	uploadDir string,
 ) *PostService {
 	return &PostService{
 		postRepo:    postRepo,
 		likeRepo:    likeRepo,
 		commentRepo: commentRepo,
+		userRepo:    userRepo,
+		followRepo:  followRepo,
 		uploadDir:   uploadDir,
 	}
 }
@@ -145,8 +151,19 @@ func (s *PostService) GetFeed(userID uint, page, limit int) ([]PostResponse, err
 	return responses, nil
 }
 
-// GetUserPosts retrieves all posts by a user.
+// GetUserPosts retrieves all posts by a user, respecting privacy settings.
+// Returns empty if the profile is private and the viewer is not a follower/owner.
 func (s *PostService) GetUserPosts(userID, currentUserID uint, page, limit int) ([]PostResponse, error) {
+	// Check privacy: load the user first
+	canView, err := s.canViewUserPosts(userID, currentUserID)
+	if err != nil {
+		return nil, err
+	}
+	if !canView {
+		// Return empty slice — profile is private and viewer has no access
+		return []PostResponse{}, nil
+	}
+
 	offset := (page - 1) * limit
 	posts, err := s.postRepo.GetUserPosts(userID, offset, limit)
 	if err != nil {
@@ -174,10 +191,10 @@ func (s *PostService) DeletePost(postID, userID uint) error {
 	return s.postRepo.Delete(postID, userID)
 }
 
-// GetExplorePosts retrieves posts for the explore page.
+// GetExplorePosts retrieves posts for the explore page, excluding private accounts.
 func (s *PostService) GetExplorePosts(currentUserID uint, page, limit int) ([]PostResponse, error) {
 	offset := (page - 1) * limit
-	posts, err := s.postRepo.GetExplorePosts(offset, limit)
+	posts, err := s.postRepo.GetExplorePostsPublic(currentUserID, offset, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -225,4 +242,22 @@ func (s *PostService) toPostResponse(post *models.Post, currentUserID uint) *Pos
 			ProfilePictureURL: post.User.ProfilePictureURL,
 		},
 	}
+}
+
+// canViewUserPosts checks whether currentUserID is allowed to view userID's posts.
+// Allowed if: account is public, or viewer is the owner, or viewer follows the account.
+func (s *PostService) canViewUserPosts(userID, currentUserID uint) (bool, error) {
+	if currentUserID == userID {
+		return true, nil
+	}
+	user, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return false, errors.New("user not found")
+	}
+	if !user.IsPrivate {
+		return true, nil
+	}
+	// Private — check if viewer follows
+	isFollowing, _ := s.followRepo.IsFollowing(currentUserID, userID)
+	return isFollowing, nil
 }

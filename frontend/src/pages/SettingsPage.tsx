@@ -5,12 +5,14 @@ import { Button } from '@/components/Button';
 import { Input } from '@/components/Input';
 import { Avatar } from '@/components/Avatar';
 import { Toast } from '@/components/Toast';
+import { Lock, Globe } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
   const [fullName, setFullName] = useState(user?.full_name || '');
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [isPrivate, setIsPrivate] = useState(user?.is_private ?? false);
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [error, setError] = useState('');
@@ -20,7 +22,12 @@ export default function SettingsPage() {
     setIsLoading(true);
     setError('');
     try {
-      const res = await userAPI.updateProfile({ full_name: fullName, username, bio });
+      const res = await userAPI.updateProfile({
+        full_name: fullName,
+        username,
+        bio,
+        is_private: isPrivate,
+      });
       updateUser({ ...user!, ...res.data });
       setToast({ message: 'Profile saved.', type: 'success' });
     } catch (err: any) {
@@ -99,6 +106,51 @@ export default function SettingsPage() {
             className="w-full bg-[#121212] border border-[#262626] rounded-lg p-3 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500 resize-none"
           />
           <p className="text-right text-[10px] text-zinc-500">{bio.length}/150</p>
+        </div>
+
+        {/* Privacy Toggle */}
+        <div className="p-4 rounded-xl bg-[#121212] border border-[#262626] flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-zinc-800 flex items-center justify-center">
+              {isPrivate
+                ? <Lock size={16} className="text-zinc-300" />
+                : <Globe size={16} className="text-zinc-300" />
+              }
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-white">
+                {isPrivate ? 'Private account' : 'Public account'}
+              </p>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                {isPrivate
+                  ? 'Only followers can see your posts'
+                  : 'Anyone can see your posts'
+                }
+              </p>
+            </div>
+          </div>
+
+          {/* Toggle switch */}
+          <button
+            id="settings-privacy-toggle"
+            type="button"
+            role="switch"
+            aria-checked={isPrivate}
+            onClick={() => setIsPrivate((v) => !v)}
+            className={`
+              relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
+              transition-colors duration-200 ease-in-out focus:outline-none
+              ${isPrivate ? 'bg-[#0095f6]' : 'bg-zinc-700'}
+            `}
+          >
+            <span
+              className={`
+                pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg
+                transition duration-200 ease-in-out
+                ${isPrivate ? 'translate-x-5' : 'translate-x-0'}
+              `}
+            />
+          </button>
         </div>
 
         <Button onClick={handleSave} variant="primary" className="w-full" isLoading={isLoading}>

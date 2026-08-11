@@ -53,6 +53,7 @@ type UserResponse struct {
 	FullName          string `json:"full_name"`
 	Bio               string `json:"bio"`
 	ProfilePictureURL string `json:"profile_picture_url"`
+	IsPrivate         bool   `json:"is_private"`
 }
 
 // Register creates a new user account.
@@ -145,5 +146,6 @@ func toUserResponse(user *models.User) UserResponse {
 		FullName:          user.FullName,
 		Bio:               user.Bio,
 		ProfilePictureURL: user.ProfilePictureURL,
+		IsPrivate:         user.IsPrivate,
 	}
 }

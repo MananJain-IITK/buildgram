@@ -15,6 +15,7 @@ type User struct {
 	FullName          string         `gorm:"size:100" json:"full_name"`
 	Bio               string         `gorm:"size:500" json:"bio"`
 	ProfilePictureURL string         `gorm:"size:500" json:"profile_picture_url"`
+	IsPrivate         bool           `gorm:"default:false" json:"is_private"`
 	CreatedAt         time.Time      `json:"created_at"`
 	UpdatedAt         time.Time      `json:"updated_at"`
 	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
