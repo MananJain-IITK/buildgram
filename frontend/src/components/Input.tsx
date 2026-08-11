@@ -12,24 +12,23 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="space-y-1.5 w-full">
         {label && (
-          <label htmlFor={id} className="block text-xs font-medium uppercase tracking-wider text-zinc-400">
+          <label htmlFor={id} className="block text-xs font-semibold text-zinc-300">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 transition-colors group-focus-within:text-zinc-300 pointer-events-none">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none">
               {icon}
             </div>
           )}
           <input
             id={id}
             className={cn(
-              'flex h-11 w-full rounded-xl border border-zinc-800 bg-zinc-900/70 px-4 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all duration-200',
-              'focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 focus:bg-zinc-900',
-              'hover:border-zinc-700/80',
+              'flex h-10 w-full rounded-lg border border-[#262626] bg-[#121212] px-3.5 py-2 text-xs text-white placeholder:text-zinc-500 transition-colors',
+              'focus:outline-none focus:border-zinc-500',
               icon && 'pl-10',
-              error && 'border-rose-500/80 focus:border-rose-500 focus:ring-rose-500/30',
+              error && 'border-rose-500/80 focus:border-rose-500',
               className
             )}
             ref={ref}

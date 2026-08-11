@@ -39,19 +39,18 @@ export function Avatar({
       )}
       onClick={onClick}
     >
-      {/* Outer Story Gradient Ring */}
       <div
         className={cn(
-          'rounded-full p-[2px] transition-transform duration-200',
+          'rounded-full p-[2px] transition-transform duration-150',
           onClick && 'group-hover:scale-105',
           hasStory
-            ? 'bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-sm shadow-rose-500/20'
-            : 'bg-zinc-800/80 border border-white/5'
+            ? 'bg-gradient-to-tr from-amber-400 via-rose-500 to-fuchsia-600'
+            : 'bg-transparent'
         )}
       >
         <div
           className={cn(
-            'relative rounded-full overflow-hidden bg-zinc-900 flex items-center justify-center font-semibold text-zinc-300',
+            'relative rounded-full overflow-hidden bg-zinc-900 flex items-center justify-center font-semibold text-zinc-300 border border-zinc-800',
             sizeMap[size]
           )}
         >
@@ -59,23 +58,19 @@ export function Avatar({
             <img
               src={src}
               alt={alt}
-              className="w-full h-full object-cover transition-opacity duration-200"
+              className="w-full h-full object-cover"
               onError={(e) => {
-                // Fallback to initials if image fails to load
                 (e.target as HTMLElement).style.display = 'none';
               }}
             />
           ) : (
-            <span className="font-display font-medium tracking-tight text-zinc-400">
-              {initials}
-            </span>
+            <span className="font-medium text-zinc-400">{initials}</span>
           )}
         </div>
       </div>
 
-      {/* Online Status Badge */}
       {isOnline && (
-        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-zinc-950 shadow-sm" />
+        <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-black" />
       )}
     </div>
   );
