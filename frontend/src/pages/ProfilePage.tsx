@@ -22,7 +22,7 @@ interface ProfileData {
 
 export default function ProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const { user: currentUser, updateUser } = useAuth();
+  const { user: currentUser } = useAuth();
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
