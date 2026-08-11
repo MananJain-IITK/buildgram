@@ -12,18 +12,22 @@ import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute() {
   const { isAuthenticated, isLoading } = useAuth();
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-7 h-7 text-purple-400 animate-spin" />
+        <span className="text-xs font-medium text-zinc-500 font-display tracking-wide">Loading BuildGram...</span>
       </div>
     );
   }
+
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 antialiased">
       <Navbar />
-      <main className="md:ml-[72px] lg:ml-[240px] pt-14 md:pt-0 pb-16 md:pb-0">
+      <main className="md:ml-[76px] lg:ml-[240px] pt-14 md:pt-0 pb-16 md:pb-0 min-h-screen transition-all duration-300">
         <Outlet />
       </main>
     </div>
@@ -32,14 +36,17 @@ function ProtectedRoute() {
 
 function PublicRoute() {
   const { isAuthenticated, isLoading } = useAuth();
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-7 h-7 text-purple-400 animate-spin" />
       </div>
     );
   }
+
   if (isAuthenticated) return <Navigate to="/" replace />;
+
   return <Outlet />;
 }
 
@@ -58,7 +65,20 @@ function App() {
             <Route path="/create" element={<CreatePostPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/activity" element={<div className="max-w-lg mx-auto px-4 py-20 text-center"><p className="text-zinc-500">Activity feed coming soon</p></div>} />
+            <Route
+              path="/activity"
+              element={
+                <div className="max-w-lg mx-auto px-4 py-24 text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-2xl bg-zinc-900 border border-white/10 flex items-center justify-center text-xl">
+                    ⚡
+                  </div>
+                  <h2 className="text-lg font-bold text-white font-display">Activity & Notifications</h2>
+                  <p className="text-sm text-zinc-500 max-w-xs mx-auto">
+                    You're all caught up! Likes, comments, and mentions will show up here.
+                  </p>
+                </div>
+              }
+            />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
