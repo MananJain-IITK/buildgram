@@ -20,7 +20,7 @@ WORKDIR /app
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/main .
-COPY --from=builder /app/.env .
+# Secrets are injected via platform environment variables (Render dashboard) at runtime
 
 # Create the uploads directory for application
 RUN mkdir -p uploads/posts uploads/profiles
