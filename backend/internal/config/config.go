@@ -11,6 +11,7 @@ import (
 
 // Config holds all configuration for the application.
 type Config struct {
+	DatabaseURL   string // Render provides this as a single connection string
 	DBHost        string
 	DBPort        string
 	DBUser        string
@@ -33,6 +34,7 @@ func LoadConfig() *Config {
 	maxUploadSize, _ := strconv.ParseInt(getEnv("MAX_UPLOAD_SIZE", "10485760"), 10, 64)
 
 	return &Config{
+		DatabaseURL:   os.Getenv("DATABASE_URL"), // set by Render automatically
 		DBHost:        getEnv("DB_HOST", "localhost"),
 		DBPort:        getEnv("DB_PORT", "5432"),
 		DBUser:        getEnv("DB_USER", "harshit"),
@@ -47,7 +49,13 @@ func LoadConfig() *Config {
 }
 
 // GetDSN returns the PostgreSQL connection string.
+// If DATABASE_URL is set (Render production), it is used directly.
+// Otherwise the individual DB_* environment variables are used (local dev).
 func (c *Config) GetDSN() string {
+	if c.DatabaseURL != "" {
+		log.Println("Using DATABASE_URL for database connection")
+		return c.DatabaseURL
+	}
 	if c.DBPassword == "" {
 		return fmt.Sprintf(
 			"host=%s port=%s user=%s dbname=%s sslmode=%s",
