@@ -6,6 +6,7 @@ import RegisterPage from '@/pages/RegisterPage';
 import HomePage from '@/pages/HomePage';
 import ProfilePage from '@/pages/ProfilePage';
 import CreatePostPage from '@/pages/CreatePostPage';
+import CreateStoryPage from '@/pages/CreateStoryPage';
 import ExplorePage from '@/pages/ExplorePage';
 import SettingsPage from '@/pages/SettingsPage';
 import { Loader2 } from 'lucide-react';
@@ -16,8 +17,7 @@ function ProtectedRoute() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-7 h-7 text-purple-400 animate-spin" />
-        <span className="text-xs font-medium text-zinc-500 font-display tracking-wide">Loading BuildGram...</span>
+        <Loader2 className="w-7 h-7 text-zinc-400 animate-spin" />
       </div>
     );
   }
@@ -63,6 +63,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/explore" element={<ExplorePage />} />
             <Route path="/create" element={<CreatePostPage />} />
+            <Route path="/stories/create" element={<CreateStoryPage />} />
             <Route path="/profile/:id" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route

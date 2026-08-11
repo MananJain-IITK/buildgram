@@ -1,0 +1,423 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{sectsty} % Custom section styling
+\usepackage{tcolorbox} % For warning boxes
+\geometry{margin=1.1in} % Slightly wider margins
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{primaryblue}{HTML}{1976D2}
+\definecolor{secondaryblue}{HTML}{1565C0}
+
+\sectionfont{\color{primaryblue}}
+\subsectionfont{\color{secondaryblue}}
+\subsubsectionfont{\color{secondaryblue}}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primaryblue,
+    urlcolor=primaryblue,
+}
+
+\lstdefinestyle{gostyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    language=Go
+}
+\lstset{style=gostyle}
+
+\title{\vspace{-1.5cm}\textbf{\Huge Database Fundamentals} \\ \vspace{0.5cm} \Large The Ultimate Beginner's Guide \\ \vspace{0.2cm} \large BuildGram Backend Documentation}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction to Databases for Backend}
+When you build a backend application, your application needs a brain to remember things. If you create a user account, post a picture, or like someone's comment, where does that information go? If we only keep it in the server's RAM (memory), it will be lost the moment the server turns off or restarts. 
+
+A \textbf{Database} is a highly optimized, structured system designed specifically for storing, retrieving, and managing large amounts of data permanently (on a hard drive/SSD).
+
+In this guide, we will learn database fundamentals from scratch, keeping our project, \textbf{BuildGram}, as our primary reference point.
+
+\section{What is PostgreSQL?}
+There are many types of databases. The most common type is a \textbf{Relational Database Management System (RDBMS)}, which stores data in structured \textbf{Tables} (like Excel spreadsheets) that can relate to one another.
+
+\textbf{PostgreSQL} (often just called Postgres) is one of the most powerful, popular, and advanced open-source relational databases in the world. It uses \textbf{SQL} (Structured Query Language) to interact with the data. 
+
+\subsection{Why use PostgreSQL?}
+We use PostgreSQL because it guarantees data safety and reliability through something called \textbf{ACID properties}.
+
+\subsection{The ACID Properties Explained}
+ACID is an acronym that describes the four key properties of a reliable database transaction. A transaction is a single logical unit of work (which might involve multiple steps, like deducting money from one account and adding it to another).
+
+\begin{itemize}
+    \item \textbf{Atomicity (All or Nothing):} A transaction must complete entirely or not at all. If you are transferring money, the database shouldn't deduct the money from your account and then crash before depositing it in the receiver's account. It guarantees that if any part of the transaction fails, the entire transaction is rolled back (undone).
+    \item \textbf{Consistency:} The database must always move from one valid state to another valid state. If you have a rule saying "Age must be greater than 0", the database will strictly enforce this and reject any transaction that tries to save an age of -5.
+    \item \textbf{Isolation:} If thousands of users are using your app at the same time, their transactions should not interfere with each other. If User A and User B both try to buy the last ticket to a concert at the exact same millisecond, isolation ensures the database processes them sequentially so that the ticket isn't sold twice.
+    \item \textbf{Durability:} Once a transaction is successfully completed and committed, the data is saved permanently. Even if the server loses power a microsecond later, the data will still be there when the server turns back on.
+\end{itemize}
+
+\section{Object-Relational Mapping (ORM)}
+\subsection{What is an ORM?}
+When writing a backend in Go, your application works with Go \texttt{structs} (objects). However, PostgreSQL understands \textbf{SQL} (tables, rows, and columns). 
+
+An \textbf{ORM (Object-Relational Mapper)} is a library that acts as a translator between your Go code and your SQL database. It allows you to interact with your database using normal Go code instead of writing raw SQL strings.
+
+For example, without an ORM, you have to write raw SQL:
+\begin{lstlisting}[language=SQL]
+SELECT * FROM users WHERE email = 'test@test.com' LIMIT 1;
+\end{lstlisting}
+
+With an ORM, you write Go code:
+\begin{lstlisting}
+db.Where("email = ?", "test@test.com").First(&user)
+\end{lstlisting}
+
+\subsection{Why use an ORM?}
+\begin{itemize}
+    \item \textbf{Security:} ORMs automatically protect you against SQL Injection attacks by safely escaping your inputs.
+    \item \textbf{Productivity:} Writing raw SQL for every single CRUD (Create, Read, Update, Delete) operation is tedious. ORMs automate this.
+    \item \textbf{Maintainability:} If you add a new field to your User, you just add it to your Go struct, and the ORM can automatically update your database table (Auto-Migration).
+\end{itemize}
+
+\subsection{What is GORM?}
+\textbf{GORM} is the most popular ORM for the Go programming language. It is incredibly feature-rich, supporting relationships, transactions, auto-migrations, and much more. In BuildGram, we use GORM to handle all our PostgreSQL database operations seamlessly.
+
+\section{Understanding Schemas}
+\subsection{What are Schemas?}
+A \textbf{Schema} is the structural blueprint of your database. It defines:
+\begin{itemize}
+    \item What tables exist.
+    \item What columns are in those tables.
+    \item What type of data goes into each column (e.g., Integer, String, Boolean, Date).
+    \item What rules apply to the data (e.g., this column cannot be empty, this column must be unique).
+    \item How the tables relate to each other.
+\end{itemize}
+
+\subsection{How to Think and Build Schemas in General}
+When you start a new project, you should grab a pen and paper and ask yourself: \textit{What are the core nouns (entities) in my application?}
+For a blog, it might be \texttt{Author}, \texttt{Post}, and \texttt{Comment}. 
+
+Once you have the entities, you define their \textbf{Attributes} (Columns). An Author has a Name and an Email. 
+
+Next, you define the \textbf{Relationships}. How do they connect?
+\begin{itemize}
+    \item \textbf{One-to-One:} A User has one Profile.
+    \item \textbf{One-to-Many:} An Author can write many Posts.
+    \item \textbf{Many-to-Many:} A Student can enroll in many Classes, and a Class has many Students.
+\end{itemize}
+
+To connect tables, databases use \textbf{Keys}:
+\begin{itemize}
+    \item \textbf{Primary Key (PK):} A unique identifier for a row in a table (usually an ID like 1, 2, 3...). Every table should have one.
+    \item \textbf{Foreign Key (FK):} A column in one table that points to the Primary Key of another table. This is how you link tables together. If a Post belongs to User 5, the Post table will have a column \texttt{user\_id = 5}.
+\end{itemize}
+
+\subsection{What are Schema Diagrams (ER Diagrams)?}
+An \textbf{Entity-Relationship (ER) Diagram} is a visual representation of your schema. It shows boxes for tables, lists the columns inside the boxes, and draws lines between the boxes to show how they relate via Foreign Keys. ER diagrams are crucial for planning your database before you write any code.
+
+\subsection{Building Schemas in Go/GORM}
+In GORM, you don't write SQL `CREATE TABLE` commands. Instead, you define standard Go \texttt{structs}, and you use \textbf{Struct Tags} to tell GORM how to create the schema.
+
+\begin{lstlisting}
+type Product struct {
+    // gorm:"primaryKey" makes this the Primary Key
+    ID    uint    `gorm:"primaryKey"` 
+    
+    // not null means it cannot be empty
+    Name  string  `gorm:"not null"`   
+    
+    // default:0 sets a default value
+    Price float64 `gorm:"default:0"`  
+}
+\end{lstlisting}
+
+\section{Building Schemas for BuildGram}
+Let's apply this to BuildGram. What are our core entities? Users, Posts, Comments, Likes, and Follows.
+
+\subsection{1. The User Schema}
+A User needs an ID, username, email, password, and timestamps.
+\begin{lstlisting}
+type User struct {
+    ID        uint      `gorm:"primaryKey"`
+    Username  string    `gorm:"uniqueIndex;not null"`
+    Email     string    `gorm:"uniqueIndex;not null"`
+    Password  string    `gorm:"not null"`
+    CreatedAt time.Time
+    UpdatedAt time.Time
+}
+\end{lstlisting}
+
+\subsection{2. The Post Schema (One-to-Many)}
+A User can have many Posts. A Post belongs to one User. We need a \texttt{UserID} as a Foreign Key.
+\begin{lstlisting}
+type Post struct {
+    ID        uint      `gorm:"primaryKey"`
+    UserID    uint      `gorm:"not null;index"` // Foreign Key linking to User
+    ImageURL  string    `gorm:"not null"`
+    Caption   string
+    CreatedAt time.Time
+    
+    // This tells GORM about the relationship
+    User      User      `gorm:"foreignKey:UserID"`
+}
+\end{lstlisting}
+
+\subsection{3. The Follows Schema (Many-to-Many)}
+Users follow other Users. This is a Many-to-Many relationship, which requires a "Join Table". In BuildGram, we explicitly define this table to track exactly who follows whom and when.
+\begin{lstlisting}
+type Follow struct {
+    ID         uint      `gorm:"primaryKey"`
+    FollowerID uint      `gorm:"not null;index"` // The person following
+    FollowingID uint     `gorm:"not null;index"` // The person being followed
+    CreatedAt  time.Time
+}
+\end{lstlisting}
+
+\section{The Complete Flow of a Database Operation}
+How does a web request actually result in data being saved to the database? In a clean, scalable backend architecture, we divide the work into three distinct layers:
+\begin{enumerate}
+    \item \textbf{Handler (Controller):} Receives the HTTP Request, reads the JSON data, and sends the final HTTP Response. It knows nothing about databases.
+    \item \textbf{Service (Business Logic):} Contains the "rules" of your app. It does calculations, hashes passwords, and coordinates things.
+    \item \textbf{Repository (Data Layer):} The ONLY layer that talks to the database. It uses GORM.
+\end{enumerate}
+
+\subsection{A Simple CRUD Example: Creating a Note}
+Let's look at a simple, complete example of creating a "Note" to see how data flows from the user's browser to the database.
+
+\subsubsection{Step 1: The Handler (Using Gin)}
+The user sends a \texttt{POST /notes} request with JSON \texttt{\{"title": "My Note", "content": "Hello"\}}.
+\begin{lstlisting}
+// handler.go
+func (h *NoteHandler) CreateNote(c *gin.Context) {
+    // 1. Define a struct to read the incoming JSON
+    var input struct {
+        Title   string `json:"title"`
+        Content string `json:"content"`
+    }
+
+    // 2. Bind the JSON to our struct
+    if err := c.ShouldBindJSON(&input); err != nil {
+        c.JSON(400, gin.H{"error": "Invalid input"})
+        return
+    }
+
+    // 3. Pass the data to the Service Layer
+    note, err := h.noteService.CreateNote(input.Title, input.Content)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "Failed to create note"})
+        return
+    }
+
+    // 4. Send success response back to user
+    c.JSON(201, note)
+}
+\end{lstlisting}
+
+\subsubsection{Step 2: The Service Layer}
+The Service receives the raw strings, validates them, and prepares the actual Database Model.
+\begin{lstlisting}
+// service.go
+func (s *NoteService) CreateNote(title, content string) (*Note, error) {
+    // Business Logic: Prevent empty titles
+    if title == "" {
+        return nil, errors.New("title cannot be empty")
+    }
+
+    // Create the DB Model instance
+    newNote := &Note{
+        Title:   title,
+        Content: content,
+    }
+
+    // Tell the Repository to save it to the DB
+    err := s.noteRepo.Save(newNote)
+    if err != nil {
+        return nil, err
+    }
+
+    return newNote, nil
+}
+\end{lstlisting}
+
+\subsubsection{Step 3: The Repository Layer (Using GORM)}
+The Repository takes the model and uses GORM to execute the actual SQL \texttt{INSERT} command.
+\begin{lstlisting}
+// repository.go
+func (r *NoteRepository) Save(note *Note) error {
+    // GORM translates this into:
+    // INSERT INTO notes (title, content) VALUES ('My Note', 'Hello');
+    return r.db.Create(note).Error
+}
+\end{lstlisting}
+Once \texttt{r.db.Create()} finishes, it returns \texttt{nil} (no error) back to the Service, which returns the Note back to the Handler, which sends a HTTP 201 response to the user. Flow complete!
+
+\section{Synchronous vs. Asynchronous Database Tasks}
+\subsection{What is a Synchronous Task?}
+A synchronous task happens sequentially. 
+\begin{enumerate}
+    \item User sends request to upload a photo.
+    \item Server receives photo.
+    \item \textbf{Server spends 5 seconds resizing the photo and saving to DB.}
+    \item User's browser spins on a loading screen for 5 whole seconds.
+    \item Server finally sends HTTP 200 OK response.
+\end{enumerate}
+In synchronous operations, the user is \textbf{blocked} waiting for the server to finish its work.
+
+\subsection{What is an Asynchronous Task?}
+An asynchronous task happens in the background.
+\begin{enumerate}
+    \item User sends request to upload a photo.
+    \item Server receives photo.
+    \item \textbf{Server tells a background worker: "Hey, resize and save this to the DB."}
+    \item \textbf{Server IMMEDIATELY sends HTTP 202 Accepted to the user.} (No loading screen!)
+    \item The background worker finishes resizing and saving to the DB 5 seconds later.
+\end{enumerate}
+We use Async tasks for things that take a long time and don't need to block the user (e.g., sending emails, generating reports, processing images, updating analytics/view counts).
+
+\section{Goroutines in Go}
+\subsection{What are Goroutines?}
+A \textbf{Goroutine} is a lightweight thread managed by the Go runtime. It allows you to run functions concurrently (at the same time) without blocking the main execution flow. 
+
+\subsection{What problem do they solve?}
+In languages like Node.js or Python, doing async work requires complex \texttt{async/await} syntax, Promises, or external worker queues (like Celery/Redis). In Go, concurrency is built directly into the language, making it incredibly easy and highly performant. A single Go server can comfortably run hundreds of thousands of goroutines simultaneously.
+
+\subsection{Syntax and Example}
+To make a function run asynchronously in the background, you literally just type the word \texttt{go} in front of it!
+
+\begin{lstlisting}
+func SendEmail(address string) {
+    time.Sleep(3 * time.Second) // Simulate taking 3 seconds
+    fmt.Println("Email sent to", address)
+}
+
+func main() {
+    fmt.Println("Starting...")
+    
+    // By adding "go", this runs in the background immediately!
+    go SendEmail("user@example.com") 
+    
+    fmt.Println("Done!") // This prints instantly, it doesn't wait 3 seconds.
+    time.Sleep(4 * time.Second) // Just waiting so the program doesn't exit before email finishes
+}
+\end{lstlisting}
+
+\section{Async Database Task Example}
+Let's look at a real-world scenario. When a user logs in, we want to update their "LastLoginTime" in the database. But we don't want the user to wait for the database update to finish before giving them their login token. 
+
+We can do the DB update asynchronously using a Goroutine!
+
+\begin{lstlisting}
+func (h *AuthHandler) Login(c *gin.Context) {
+    // ... validate username and password ...
+    
+    userID := user.ID
+
+    // START ASYNC DB TASK
+    // We create an anonymous function and run it as a goroutine
+    go func(id uint) {
+        // This code now runs in the background!
+        // It talks to the DB to update the timestamp.
+        err := h.userRepo.UpdateLastLogin(id, time.Now())
+        if err != nil {
+            // Log the error, but we can't send it to the user 
+            // because the HTTP response is already gone!
+            log.Printf("Background task failed: %v", err)
+        }
+    }(userID) // Pass the userID into the goroutine
+    // END ASYNC DB TASK
+
+    // The handler doesn't wait for the goroutine! 
+    // It immediately sends the token back to the user for a snappy experience.
+    c.JSON(200, gin.H{"token": "my_secret_jwt_token"})
+}
+\end{lstlisting}
+\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black,title=\textbf{Important Warning}]
+In web frameworks like Gin, the \texttt{c *gin.Context} object is destroyed the moment the HTTP response is sent. You must \textbf{never} use \texttt{c.JSON} or read from \texttt{c} inside a goroutine, because the goroutine will try to access a destroyed object and crash your server! Always pass only the specific data (like \texttt{userID}) into the goroutine.
+\end{tcolorbox}
+
+\section{Additional Advanced Topics}
+\subsection{1. Transactions}
+Imagine a user deleting their BuildGram account. You need to delete their User profile AND delete all their Posts. 
+What if you successfully delete the User, but then the database crashes before it deletes the Posts? Now you have "orphan" posts belonging to a user that doesn't exist.
+
+A \textbf{Transaction} solves this. It groups multiple SQL commands into one atomic block. If any step fails, the \textit{entire} transaction is "Rolled Back" (undone). If all steps succeed, it is "Committed" (saved).
+
+\begin{lstlisting}
+// GORM Transaction Example
+db.Transaction(func(tx *gorm.DB) error {
+  // Use 'tx' instead of 'db' inside the transaction
+  
+  if err := tx.Where("user_id = ?", id).Delete(&Post{}).Error; err != nil {
+    return err // Returning an error automatically ROLLS BACK the transaction
+  }
+
+  if err := tx.Delete(&User{}, id).Error; err != nil {
+    return err // Rolls back
+  }
+
+  return nil // Returning nil COMMITS the transaction permanently
+})
+\end{lstlisting}
+
+\subsection{2. The N+1 Query Problem}
+This is the most common performance killer in ORMs.
+Suppose you want to fetch 10 Posts, and for each Post, you want to display the Author's username.
+
+\textbf{The Bad Way (N+1 Problem):}
+\begin{enumerate}
+    \item You write a query to fetch 10 posts: \texttt{SELECT * FROM posts LIMIT 10;} (1 Query)
+    \item Your code loops through the 10 posts.
+    \item Inside the loop, for each post, you query the database to get the user: \texttt{SELECT * FROM users WHERE id = X;} (10 Queries)
+\end{enumerate}
+Total Queries: 1 (to get posts) + 10 (to get users) = \textbf{11 Queries}.
+If you fetched 100 posts, it would be 101 queries! This destroys performance.
+
+\textbf{The Solution (Eager Loading):}
+You tell GORM to fetch everything upfront in just 2 queries using \texttt{Preload}.
+\begin{lstlisting}
+var posts []Post
+// GORM will fetch the 10 posts, look at all the user_ids, 
+// and fetch all 10 users in one single efficient query.
+db.Preload("User").Limit(10).Find(&posts)
+\end{lstlisting}
+
+\subsection{3. Indexing}
+Databases read data from hard drives. If you have 10 million users and run \texttt{SELECT * FROM users WHERE username = 'manan'}, the database normally has to scan every single row one by one to find it (Sequential Scan). This is very slow.
+
+An \textbf{Index} is like the index at the back of a textbook. It creates a highly optimized data structure (usually a B-Tree) that keeps the usernames sorted. With an index, the database can find 'manan' among 10 million users in milliseconds instead of seconds.
+
+In GORM, you add indexes using struct tags:
+\begin{lstlisting}
+type User struct {
+    // The "index" tag tells the database to index this column for fast lookups
+    Username string `gorm:"index"` 
+}
+\end{lstlisting}
+\textbf{Rule of thumb:} You should add indexes to columns that you frequently use in \texttt{WHERE} clauses (like searching by email, username, or foreign keys). However, don't index everything, because indexes slow down \texttt{INSERT} and \texttt{UPDATE} operations (the database has to update the index every time you add data).
+
+\end{document}

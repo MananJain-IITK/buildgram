@@ -24,12 +24,15 @@ func main() {
 	// Run migrations
 	models.AutoMigrate(db)
 
-	// Create uploads directory
+	// Create uploads directories
 	if err := os.MkdirAll(cfg.UploadDir+"/posts", os.ModePerm); err != nil {
 		log.Fatalf("Failed to create uploads directory: %v", err)
 	}
 	if err := os.MkdirAll(cfg.UploadDir+"/profiles", os.ModePerm); err != nil {
 		log.Fatalf("Failed to create profiles directory: %v", err)
+	}
+	if err := os.MkdirAll(cfg.UploadDir+"/stories", os.ModePerm); err != nil {
+		log.Fatalf("Failed to create stories directory: %v", err)
 	}
 
 	// Initialize repositories
@@ -38,18 +41,21 @@ func main() {
 	commentRepo := repositories.NewCommentRepository(db)
 	likeRepo := repositories.NewLikeRepository(db)
 	followRepo := repositories.NewFollowRepository(db)
+	storyRepo := repositories.NewStoryRepository(db)
 
 	// Initialize services
 	authService := services.NewAuthService(userRepo, cfg.JWTSecret)
 	userService := services.NewUserService(userRepo, followRepo, cfg.UploadDir)
 	postService := services.NewPostService(postRepo, likeRepo, commentRepo, cfg.UploadDir)
 	interactionService := services.NewInteractionService(likeRepo, commentRepo, followRepo, userRepo)
+	storyService := services.NewStoryService(storyRepo, cfg.UploadDir)
 
 	// Initialize handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
 	postHandler := handlers.NewPostHandler(postService)
 	interactionHandler := handlers.NewInteractionHandler(interactionService)
+	storyHandler := handlers.NewStoryHandler(storyService)
 
 	// Setup Gin router
 	router := gin.Default()
@@ -61,7 +67,7 @@ func main() {
 	router.Static("/uploads", cfg.UploadDir)
 
 	// Setup routes
-	routes.SetupRoutes(router, cfg.JWTSecret, authHandler, userHandler, postHandler, interactionHandler)
+	routes.SetupRoutes(router, cfg.JWTSecret, authHandler, userHandler, postHandler, interactionHandler, storyHandler)
 
 	// Start server
 	log.Printf("🚀 BuildGram server starting on port %s", cfg.ServerPort)

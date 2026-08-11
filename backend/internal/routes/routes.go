@@ -14,6 +14,7 @@ func SetupRoutes(
 	userHandler *handlers.UserHandler,
 	postHandler *handlers.PostHandler,
 	interactionHandler *handlers.InteractionHandler,
+	storyHandler *handlers.StoryHandler,
 ) {
 	api := router.Group("/api")
 
@@ -55,5 +56,10 @@ func SetupRoutes(
 		protected.POST("/users/:id/follow", interactionHandler.ToggleFollow)
 		protected.GET("/users/:id/followers", interactionHandler.GetFollowers)
 		protected.GET("/users/:id/following", interactionHandler.GetFollowing)
+
+		// Story routes
+		protected.POST("/stories", storyHandler.CreateStory)
+		protected.GET("/stories/feed", storyHandler.GetFeedStories)
+		protected.GET("/stories/user/:id", storyHandler.GetUserStories)
 	}
 }

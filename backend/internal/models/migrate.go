@@ -14,6 +14,7 @@ func AutoMigrate(db *gorm.DB) {
 		&Comment{},
 		&Like{},
 		&Follow{},
+		&Story{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto-migrate models: %v", err)

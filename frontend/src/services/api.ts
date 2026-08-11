@@ -95,4 +95,17 @@ export const interactionAPI = {
     api.get(`/users/${userId}/following?page=${page}&limit=${limit}`),
 };
 
+// Story API
+export const storyAPI = {
+  create: (file: File) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    return api.post('/stories', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  getFeed: () => api.get('/stories/feed'),
+  getUserStories: (userId: number) => api.get(`/stories/user/${userId}`),
+};
+
 export default api;

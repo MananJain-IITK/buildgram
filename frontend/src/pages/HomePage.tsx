@@ -1,32 +1,16 @@
 import { useState, useEffect } from 'react';
 import { PostCard } from '@/components/PostCard';
 import { RightSidebar } from '@/components/RightSidebar';
-import { Avatar } from '@/components/Avatar';
+import { StoriesBar } from '@/components/StoriesBar';
 import { postAPI } from '@/services/api';
 import { Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-interface StoryItem {
-  id: number;
-  username: string;
-  avatar?: string;
-  hasStory: boolean;
-}
 
 export default function HomePage() {
   const [posts, setPosts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-
-  // Mock Stories bar
-  const stories: StoryItem[] = [
-    { id: 1, username: 'harshit', hasStory: true },
-    { id: 2, username: 'sarah_m', hasStory: true },
-    { id: 3, username: 'alex_k', hasStory: true },
-    { id: 4, username: 'david_99', hasStory: false },
-    { id: 5, username: 'elena_r', hasStory: true },
-  ];
 
   const loadPosts = async (pageNum: number) => {
     try {
@@ -67,17 +51,8 @@ export default function HomePage() {
     <div className="max-w-6xl mx-auto flex gap-12 px-4 sm:px-6 py-6">
       {/* Center Feed */}
       <div className="flex-1 max-w-[470px] mx-auto space-y-4">
-        {/* Top Stories Reel */}
-        <div className="p-3 bg-black border border-[#262626] rounded-xl overflow-x-auto no-scrollbar flex items-center gap-4">
-          {stories.map((story) => (
-            <div key={story.id} className="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer">
-              <Avatar alt={story.username} size="lg" hasStory={story.hasStory} />
-              <span className="text-[11px] font-normal text-zinc-300 truncate w-14 text-center">
-                {story.username}
-              </span>
-            </div>
-          ))}
-        </div>
+        {/* Stories Bar */}
+        <StoriesBar />
 
         {/* Feed Posts */}
         {posts.length === 0 ? (
